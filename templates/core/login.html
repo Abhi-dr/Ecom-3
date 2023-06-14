@@ -1,0 +1,64 @@
+{% extends './base.html' %}
+{% load static %}
+{% block start %}
+    
+  
+    <section id="form">
+      <!--form-->
+      <div class="container">
+        {% if messages %}
+        <ul class="messages" style="background: #FE980F; border-radius: 5px; display: flex; justify-content: space-between;    padding: 0.5rem 1rem;
+        color: white;">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li> <button style="background: none;" id="remove_message">X</button>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="row">
+          <div class="col-sm-4 col-sm-offset-1">
+            <div class="login-form">
+              <!--login form-->
+              <h2>Login to your account</h2>
+              <form action="user_login" , method="post">
+                {% csrf_token %}
+                <input type="text" required name="username" placeholder="Name" />
+                <input type="password" required name="password" placeholder="Password" />
+                <button type="submit" class="btn btn-default">Login</button>
+              </form>
+            </div>
+            <!--/login form-->
+          </div>
+          <div class="col-sm-1">
+            <h2 class="or">OR</h2>
+          </div>
+          <div class="col-sm-4">
+            <div class="signup-form">
+              <!--sign up form-->
+              <h2>New User Signup!</h2>
+
+              <form action="user_register" , method="post">
+                {% csrf_token %}
+
+                <input type="text" name="username" placeholder="Name" required />
+                <input
+                  type="email"
+                  name="email_address"
+                  placeholder="Email Address"
+                / required>
+                <input type="password" name="password" placeholder="Password" required/>
+                <button type="submit" class="btn btn-default">Signup</button>
+              </form>
+            </div>
+            <!--/sign up form-->
+          </div>
+        </div>
+      </div>
+    </section>
+    <!--/form-->
+
+    <script>
+      document.getElementById("remove_message").addEventListener("click", () => {
+        document.querySelector(".messages").style.display = "none";
+      });
+    </script>
+    {% endblock %}

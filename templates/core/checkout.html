@@ -1,0 +1,167 @@
+{% extends './base.html' %}
+{% load static %}
+{% block start %}
+    
+  
+    <section id="cart_items">
+      <div class="container">
+        <div class="breadcrumbs">
+          <ol class="breadcrumb">
+            <li><a href="#">Home</a></li>
+            <li class="active">Check out</li>
+          </ol>
+        </div>
+        <!--/breadcrums-->
+
+        
+        
+        <!--/checkout-options-->
+
+        
+        <!--/register-req-->
+
+        <div class="shopper-informations">
+          <div class="row">
+            <div class="col-sm-12 clearfix">
+              <div class="bill-to">
+                <p>Delievery details</p>
+                <div class="form-one">
+                  {% if item.Address %}
+                  <form method="post"> {% csrf_token %}
+                    <input type="text" name="first_name" placeholder="First Name *" value="{{item.firstname}}" />
+                    <input type="text" name="last_name" placeholder="Last Name *" value="{{item.lastname}}" />
+                    <input type="text" name="address" placeholder="Address 1 *" value="{{item.Address}}" />
+                    <input type="text" name="country" placeholder=" Country " value="{{item.country}}" />
+                    <input type="number" name="pincode" placeholder="Zip / Postal Code *" value="{{item.zip_code}}" />
+                    <input type="text" name="phone" placeholder="Phone *" value="{{item.phone}}" />
+                    <input type="submit" value="submit" class="btn" style="background: #FE980F; color: white;">
+                  </form>
+                  {% else %}
+                  <form method="post"> {% csrf_token %}
+                    <input type="text" name="first_name" placeholder="First Name *" />
+                    <input type="text" name="last_name" placeholder="Last Name *" />
+                    <input type="text" name="address" placeholder="Address 1 *" />
+                    <input type="text" name="country" placeholder=" Country " />
+                    <input type="number" name="pincode" placeholder="Zip / Postal Code *" />
+                    <input type="text" name="phone" placeholder="Phone *" />
+                    <input type="submit" value="submit" class="btn" style="background: #FE980F; color: white;">
+                  </form>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="order-message">
+               
+            </div>
+          </div>
+        </div>
+        <div class="review-payment">
+          <h2>Review & Payment</h2>
+        </div>
+
+        <div class="table-responsive cart_info">
+          <table class="table table-condensed">
+            <thead>
+              <tr class="cart_menu">
+                <td class="image">Item</td>
+                <td class="description"></td>
+                <td class="price">Price</td>
+                <td class="quantity">Quantity</td>
+                <td class="total">Total Item Price</td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody>
+              {% for items in cart_prod_and_price %}
+                <tr>
+                  <td class="cart_product">
+                    <a href=""><img style="width: 15rem" src="{{ items.0.product.img.url }}" alt=""/></a>
+                  </td>
+                  <td class="cart_description">
+                    <h4><a href="">{{ items.0.product }}</a></h4>
+                  </td>
+                  <td class="cart_price">
+                    <p>Rs.</p>
+                    {{ items.0.product.price }}
+                  </td>
+                  <td class="cart_quantity">
+                    <form method="post" class="cart_quantity_button"> {% csrf_token %}
+                      {% if quantity and items.0.product.slug == inst_product %}
+                      <input class="cart_quantity_input" type="text" name="quantity" value="{{quantity}}" readonly autocomplete="off" size="2"/>
+                      {% else %}
+                      <input class="cart_quantity_input" type="text" name="quantity" value="{{ items.0.quantity }}" readonly autocomplete="off" size="2"/>
+                      {% endif %}
+                      <input type="hidden" name="prod-slug" id="" value="{{ items.0.product.slug }}">
+                      <a href="/cart" style="background: #FE980F; border: none; color: white; padding: 0.4rem ">Edit</a>
+                    </form>
+                  </td>
+                  <td class="cart_total">
+                    <p class="cart_total_price">Rs.</p>
+                    {{ items.1 }}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <div class="proc-to-pay" style="border-top: 2px solid grey; display: flex; flex-direction: column;">
+            <a href="/checkout" id="rzp-button1" class="btn" style="background: #FE980F; border: none; margin: 1rem 0; color: white; padding: 0.4rem ">Proceed To Buy Rs. {{ total_price }}</a>
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+            <form id="handlerequest" action="{% url 'handlerequest' %}" method="post"> {% csrf_token %}
+              <input name="razorpay_order_id" value="{{order_id}}" type="hidden">
+              <input id="razorpay_payment_id" name="razorpay_payment_id" type="hidden">
+              <input id="razorpay_signature" name="razorpay_signature" type="hidden">
+            </form>
+            
+<script>
+var options = {
+    "key": "{{razorpay_merchant_id}}", // Enter the Key ID generated from the Dashboard
+    "amount": "{% widthratio final_price 1 100 %}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+    "currency": "INR",
+    "name": "Tulsi Mala", //your business name
+    "description": "Test Transaction",
+    "order_id": "{{order_id}}", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+    "handler": function(response){
+      document.getElementById("razorpay_payment_id").value = response.razorpay_payment_id
+      document.getElementById("razorpay_signature").value = response.razorpay_signature
+      document.getElementById("handlerequest").submit()
+    },
+    "prefill": { //We recommend using the prefill parameter to auto-fill customer's contact information especially their phone number
+        "name": "{{request.user.username}}", //your customer's name
+        "email": "{{request.user.email}}",
+        "contact": "+91" + "{{request.user.phone_field}}" //Provide the customer's phone number for better conversion rates 
+    },
+    "notes": {
+        "address": "Razorpay Corporate Office"
+    },
+    "theme": {
+        "color": "#FE980F"
+    } 
+
+};
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+          </div>
+        </div>
+       
+      </div>
+    </section>
+
+    <!-- <script>
+      document.getElementById('rzp-button1').addEventListener('click', function(event){
+        if (document.getElementsByName('first_name')[0].value == '' || document.getElementsByName('last_name')[0].value == '' || document.getElementsByName('address')[0].value == '' || document.getElementsByName('country')[0].value == '' || document.getElementsByName('pincode')[0].value == '' || document.getElementsByName('phone')[0].value == ''){
+          alert('Please fill the delivery details first');
+          event.preventDefault();
+        }
+        else{
+          // payment gateway code
+        }
+      })
+    </script> -->
+    <!--/#cart_items-->
+
+    {% endblock %}
